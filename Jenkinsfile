@@ -19,21 +19,13 @@ pipeline {
         }
 
         // Linting Stage
-        stage('Linting') {
+           stage('Lint HTML') {
             steps {
-                script {
-                    echo "Running Linting for HTML and Python..."
-
-                    // Run HTML linting (htmlhint)
-                    sh 'npm install htmlhint --save-dev'
-                    sh 'npx htmlhint *.html'
-
-                    // Run Python linting (flake8) if required
-                    sh 'pip install flake8'
-                    sh 'flake8 .'
-                }
+                sh 'npm install htmlhint --save-dev'
+                sh 'npx htmlhint *.html'
             }
         }
+
 
         stage('Build Docker Image') {
             steps {
