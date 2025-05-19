@@ -26,8 +26,8 @@ COPY . /app
 # Install Python dependencies (make sure requirements1.txt exists)
 RUN pip install --no-cache-dir -r requirements1.txt
 
-# Install GeckoDriver (with a fixed version to avoid dynamic fetching issues)
-# Use a stable release of GeckoDriver (version 0.30.0 for example)
+# Install GeckoDriver (using a fixed version to avoid dynamic fetching issues)
+# Using GeckoDriver version 0.30.0 (stable release)
 RUN wget -q https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz -O /tmp/geckodriver.tar.gz \
     && tar -xzf /tmp/geckodriver.tar.gz -C /usr/local/bin \
     && rm /tmp/geckodriver.tar.gz \
