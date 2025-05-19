@@ -9,24 +9,28 @@ COPY . .
 
 # Install Python dependencies from requirements.txt
 # Ensure it includes selenium
-RUN pip install --no-cache-dir -r requirements2.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Install system dependencies required for Firefox and GeckoDriver
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
     firefox-esr \
+    xvfb \
     && rm -rf /var/lib/apt/lists/*
 
-# Install GeckoDriver
+# Install GeckoDriver (fetch the latest version)
 RUN GECKODRIVER_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep tag_name | cut -d '"' -f 4) \
     && wget -q "https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz" -O /tmp/geckodriver.tar.gz \
     && tar -xzf /tmp/geckodriver.tar.gz -C /usr/local/bin \
     && rm /tmp/geckodriver.tar.gz \
     && chmod +x /usr/local/bin/geckodriver
 
-# Set display port to avoid crash
+# Set display port to avoid crash when running Firefox in headless mode
 ENV DISPLAY=:99
 
-# Command to run on container start
+# Start Xvfb in the background (X virtual framebuffer for headless operation)
+RUN Xvfb :99 -screen 0 1280x1024x24 &
+
+# Command to run the tests on container start
 CMD ["python", "./test_html_elements.py"]
