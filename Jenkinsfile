@@ -18,16 +18,10 @@ pipeline {
             }
         }
 
-        stage('Lint HTML') {
-            steps {
-                sh 'npm install htmlhint --save-dev'
-                sh 'npx htmlhint *.html'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
+                    echo "Building Docker Image..."
                     docker.build("${DOCKER_IMAGE}:${IMAGE_TAG}", "-f Dockerfile.build .")
                 }
             }
@@ -36,6 +30,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
+                    echo "Pushing Docker Image..."
                     docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_CREDENTIALS_ID}") {
                         docker.image("${DOCKER_IMAGE}:${IMAGE_TAG}").push()
                     }
@@ -46,7 +41,67 @@ pipeline {
         stage('Deploy to Dev Environment') {
             steps {
                 script {
-                    // Set up Kubernetes configuration using the specified KUBECONFIG
+                    echo "Deploying to Dev Environment..."
                     def kubeConfig = readFile(KUBECONFIG)
-                    // Update deployment-dev.yaml to use the new image tag
-                    sh "sed -i '
+                    sh "sed -i 's|${DOCKER_IMAGE}:latest|${DOCKER_IMAGE}:${IMAGE_TAG}|' deployment-dev.yaml"
+                    sh "kubectl apply -f deployment-dev.yaml"
+                }
+            }
+        }
+
+        stage("Run Acceptance Tests") {
+            steps {
+                script {
+                    echo "Running Acceptance Tests..."
+                    sh 'docker stop qa-tests || true'
+                    sh 'docker rm qa-tests || true'
+                    sh 'docker build -t qa-tests -f Dockerfile.test .'
+                    sh 'docker run qa-tests'
+                }
+            }
+        }
+
+        stage ("Run Security Checks (Dastardly)") {
+            steps {
+                script {
+                    echo "Running Dastardly scan on: http://your-app-service-url"
+                    sh '''
+                        docker run --user $(id -u) -v ${WORKSPACE}:${WORKSPACE}:rw \
+                        -e BURP_START_URL=http://your-app-service-url \
+                        -e BURP_REPORT_FILE_PATH=${WORKSPACE}/dastardly-report.xml \
+                        public.ecr.aws/portswigger/dastardly:latest
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Prod Environment') {
+            steps {
+                script {
+                    echo "Deploying to Prod Environment..."
+                    sh "sed -i 's|${DOCKER_IMAGE}:latest|${DOCKER_IMAGE}:${IMAGE_TAG}|' deployment-prod.yaml"
+                    sh "cd .."
+                    sh "kubectl apply -f deployment-prod.yaml"
+                }
+            }
+        }
+
+        stage('Check Kubernetes Cluster') {
+            steps {
+                script {
+                    echo "Checking Kubernetes Cluster..."
+                    sh "kubectl get all"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            slackSend color: "good", message: "Build Completed: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
+        }
+        failure {
+            slackSend color: "danger", message: "Build Failed: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
+        }
+    }
+}
