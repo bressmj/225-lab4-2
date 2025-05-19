@@ -1,8 +1,7 @@
-\from selenium import webdriver
+from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 import unittest
 
 class TestContacts(unittest.TestCase):
@@ -12,8 +11,6 @@ class TestContacts(unittest.TestCase):
         firefox_options.add_argument("--headless")  # Ensures the browser window does not open
         firefox_options.add_argument("--no-sandbox")
         firefox_options.add_argument("--disable-dev-shm-usage")
-        
-        # Initialize Firefox WebDriver
         self.driver = webdriver.Firefox(options=firefox_options)
 
     def test_contacts(self):
