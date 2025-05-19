@@ -7,7 +7,6 @@ pipeline {
         IMAGE_TAG = "build-${BUILD_NUMBER}"
         GITHUB_URL = 'https://github.com/bressmj/225-lab5-1.git'    //<------replace with your MiamiID
         KUBECONFIG = credentials('bressmj-225')                     //<------replace with your MiamiID
-        SLACK_CHANNEL = '#your-channel'                             //<------replace with your Slack channel
     }
 
     stages {
@@ -110,13 +109,13 @@ pipeline {
             junit testResults: 'dastardly-report.xml', skipPublishingChecks: true
         }
         success {
-            slackSend(channel: "${SLACK_CHANNEL}", color: "good", message: "Build Completed: ${env.JOB_NAME} ${env.BUILD_NUMBER} - Success")
+            slackSend color: "good", message: "Build Completed: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
         }
         unstable {
-            slackSend(channel: "${SLACK_CHANNEL}", color: "warning", message: "Build Unstable: ${env.JOB_NAME} ${env.BUILD_NUMBER}")
+            slackSend color: "warning", message: "Build Unstable: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
         }
         failure {
-            slackSend(channel: "${SLACK_CHANNEL}", color: "danger", message: "Build Failed: ${env.JOB_NAME} ${env.BUILD_NUMBER}")
+            slackSend color: "danger", message: "Build Failed: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
         }
     }
 }
