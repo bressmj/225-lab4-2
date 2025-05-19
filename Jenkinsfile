@@ -81,10 +81,10 @@ pipeline {
         stage ("Run Security Checks (Dastardly)") {
             steps {
                 script {
-                    echo "Running Dastardly scan on: http://your-app-url"
+                    echo "Running Dastardly scan on: http://10.48.10.146"
                     sh '''
                         docker run --user $(id -u) -v ${WORKSPACE}:${WORKSPACE}:rw \
-                        -e BURP_START_URL=http://your-app-url \
+                        -e BURP_START_URL=http://10.48.10.146 \
                         -e BURP_REPORT_FILE_PATH=${WORKSPACE}/dastardly-report.xml \
                         public.ecr.aws/portswigger/dastardly:latest
                     '''
