@@ -1,31 +1,40 @@
-# Use Python 3.9 slim image as the base image
+# Use the official Python image from Docker Hub
 FROM python:3.9-slim
 
-# Install system dependencies
+# Install necessary dependencies
 RUN apt-get clean && apt-get -y update && apt-get -y install \
     nginx \
     python3-dev \
     build-essential \
     nfs-common \
+    curl \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 # Create mount point for NFS
 RUN mkdir -p /nfs
 
-# Copy database file to the NFS mount (ensure demo.db is in the correct path)
+# Copy database file to NFS (make sure the demo.db is in the correct location)
 COPY ./data/demo.db /nfs/
 
 # Set the working directory for the Flask app
 WORKDIR /app
 
-# Copy application files (e.g., app.py, requirements.txt, etc.)
+# Copy application files (make sure your Flask app is in the Docker build context)
 COPY . /app
 
-# Install Python dependencies (ensure requirements1.txt exists in the project root)
+# Install Python dependencies (make sure requirements1.txt exists)
 RUN pip install --no-cache-dir -r requirements1.txt
+
+# Install GeckoDriver (with a fixed version to avoid dynamic fetching issues)
+# Use a stable release of GeckoDriver (version 0.30.0 for example)
+RUN wget -q https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz -O /tmp/geckodriver.tar.gz \
+    && tar -xzf /tmp/geckodriver.tar.gz -C /usr/local/bin \
+    && rm /tmp/geckodriver.tar.gz \
+    && chmod +x /usr/local/bin/geckodriver
 
 # Expose port 5000 for the Flask application
 EXPOSE 5000
 
-# Command to run the Flask application
+# Command to run the Flask application (make sure main.py is correct)
 CMD ["python3", "main.py"]
