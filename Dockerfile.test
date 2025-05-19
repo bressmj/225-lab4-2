@@ -7,9 +7,9 @@ WORKDIR /usr/src/app
 # Copy the current directory contents into the container at /usr/src/app
 COPY . .
 
-# Install Python dependencies from requirements.txt
+# Install Python dependencies from requirements1.txt
 # Ensure it includes selenium
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements1.txt
 
 # Install system dependencies required for Firefox and GeckoDriver
 RUN apt-get update && apt-get install -y \
