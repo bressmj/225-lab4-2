@@ -18,6 +18,23 @@ pipeline {
             }
         }
 
+        // Linting Stage
+        stage('Linting') {
+            steps {
+                script {
+                    echo "Running Linting for HTML and Python..."
+
+                    // Run HTML linting (htmlhint)
+                    sh 'npm install htmlhint --save-dev'
+                    sh 'npx htmlhint *.html'
+
+                    // Run Python linting (flake8) if required
+                    sh 'pip install flake8'
+                    sh 'flake8 .'
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
@@ -64,10 +81,10 @@ pipeline {
         stage ("Run Security Checks (Dastardly)") {
             steps {
                 script {
-                    echo "Running Dastardly scan on: http://10.48.10.146"
+                    echo "Running Dastardly scan on: http://your-app-url"
                     sh '''
                         docker run --user $(id -u) -v ${WORKSPACE}:${WORKSPACE}:rw \
-                        -e BURP_START_URL=http://10.48.10.146 \
+                        -e BURP_START_URL=http://your-app-url \
                         -e BURP_REPORT_FILE_PATH=${WORKSPACE}/dastardly-report.xml \
                         public.ecr.aws/portswigger/dastardly:latest
                     '''
